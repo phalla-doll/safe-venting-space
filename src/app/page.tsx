@@ -411,7 +411,7 @@ export default function Home() {
                             {messages.map((message, index) => (
                                 <Card
                                     key={message.id}
-                                    className="animate-fade-up shadow-xs transition-shadow hover:shadow-md"
+                                    className="animate-fade-up shadow-xs"
                                     style={{
                                         animationDelay: `${index * 0.1}s`,
                                     }}
