@@ -372,7 +372,7 @@ export default function Home() {
                             {skeletonIds.map((id, index) => (
                                 <Card
                                     key={id}
-                                    className="animate-fade-up shadow-xs transition-shadow"
+                                    className="animate-fade-up shadow-xs"
                                     style={{
                                         animationDelay: `${index * 0.1}s`,
                                     }}
