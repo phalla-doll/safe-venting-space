@@ -19,8 +19,6 @@ if (!notionDatabaseId) {
     console.warn("NOTION_DATABASE_ID is not set. /api/notion will return 500.");
 }
 
-const notion = new Client({ auth: notionApiKey });
-
 type CreateSubmissionBody = {
     content?: string;
     fingerprint?: string;
@@ -37,35 +35,54 @@ export async function GET() {
     }
 
     try {
-        // Use type assertion as the query method exists but types may be incomplete
-        const response = await (
-            notion.databases as unknown as {
-                query: (args: {
-                    database_id: string;
-                    sorts?: Array<{
-                        timestamp: string;
-                        direction: "ascending" | "descending";
-                    }>;
-                }) => Promise<{
-                    results: PageObjectResponse[];
-                }>;
-            }
-        ).query({
+        // Initialize the Notion client with the API key
+        const notion = new Client({ auth: notionApiKey });
+
+        // First, retrieve the database to get the data source ID
+        const database = await notion.databases.retrieve({
             database_id: notionDatabaseId,
+        });
+
+        // Check if we have a full database object with data sources
+        if (
+            !("data_sources" in database) ||
+            !database.data_sources ||
+            database.data_sources.length === 0
+        ) {
+            return NextResponse.json(
+                { error: "Database does not have any data sources" },
+                { status: 500 },
+            );
+        }
+
+        // Get the first data source ID
+        const dataSourceId = database.data_sources[0].id;
+
+        // Query the data source using the correct method
+        const response = await notion.dataSources.query({
+            data_source_id: dataSourceId,
             sorts: [
                 {
                     timestamp: "created_time",
                     direction: "descending",
                 },
             ],
+            result_type: "page", // Only return pages, not data sources
         });
 
-        const messages = response.results.map((page: PageObjectResponse) => {
-            const props = "properties" in page ? page.properties : {};
+        // Filter results to only include full page objects (not partial or data sources)
+        const pages = response.results.filter(
+            (result): result is PageObjectResponse =>
+                result.object === "page" &&
+                "properties" in result &&
+                "created_time" in result,
+        );
+
+        const messages = pages.map((page) => {
+            const props = page.properties;
             const contentProp = props.content;
             const usernameProp = props.username;
-            const createdTime =
-                "created_time" in page ? page.created_time : undefined;
+            const createdTime = page.created_time;
 
             // Extract content from rich_text property
             let content = "";
@@ -177,6 +194,9 @@ export async function POST(request: Request) {
     }
 
     try {
+        // Initialize the Notion client with the API key
+        const notion = new Client({ auth: notionApiKey });
+
         // Use provided created_date or default to current time
         const createdDate = body.created_date || new Date().toISOString();
 
