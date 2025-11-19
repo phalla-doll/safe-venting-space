@@ -20,10 +20,11 @@ As an applicant project, this implementation showcases:
 
 ## Optional Enhancements (Bonus)
 
+- [x] Timestamps for messages (implemented)
 - [ ] Basic moderation (e.g., detect and block abusive or harmful language)
-- [ ] Timestamps and/or emoji support for messages
+- [ ] Emoji support for messages
 - [ ] Animated transitions, submission confirmations, or other UX polish
-- [ ] Soothing UI theme, accessible design, and responsive layout
+- [x] Soothing UI theme, accessible design, and responsive layout (implemented)
 
 ## Tech Stack
 
@@ -62,7 +63,10 @@ npm install
      - Copy the "Internal Integration Token" → set as `NOTION_API_KEY` in `.env.local`
    - Create a Notion database:
      - Create a new database in your Notion workspace
-     - Add a property named `content` with type "Rich Text"
+     - Add the following properties:
+       - `content` with type "Rich Text"
+       - `username` with type "Rich Text" (optional, but recommended)
+       - `fingerprint` with type "Rich Text" (optional, but recommended)
      - Share the database with your integration (click "..." → "Connections" → select your integration)
      - Copy the database ID from the URL (the part after the last `/` and before `?`) → set as `NOTION_DATABASE_ID` in `.env.local`
 
@@ -110,28 +114,59 @@ src/
 
 ## Notion API Integration
 
-This project uses the Notion API to persist anonymous messages. When a user submits a message:
+This project uses the Notion API to persist and retrieve anonymous messages. The application:
 
-1. The message is sent to `/api/notion` endpoint
-2. The API creates a new page in your Notion database
-3. The message content is stored in the `content` property
-4. Success/error feedback is shown to the user via toast notifications
+1. **Fetches existing messages** on page load via GET request
+2. **Displays messages** in a feed sorted by creation time (newest first)
+3. **Allows users to submit new messages** via POST request
+4. **Shows loading states** with skeleton loaders while fetching
+5. **Provides feedback** via toast notifications for success/error states
 
 ### Database Schema Requirements
 
-Your Notion database must have:
-- **`content`** property (Rich Text type)
+Your Notion database must have the following properties:
+- **`content`** property (Rich Text type) - stores the message content
+- **`username`** property (Rich Text type) - stores the generated username (optional)
+- **`fingerprint`** property (Rich Text type) - stores the browser fingerprint for tracking (optional)
 
-If your schema differs, update the property name in `src/app/api/notion/route.ts`.
+If your schema differs, update the property names in `src/app/api/notion/route.ts`.
 
-### API Endpoint
+### API Endpoints
 
-**Location:** `/api/notion`  
+**Location:** `/api/notion`
+
+#### GET - Fetch Messages
+
+**Method:** `GET`  
+**Request:** No body required
+
+**Response:**
+- Success (200): 
+```json
+{
+  "messages": [
+    {
+      "id": "string",
+      "content": "string",
+      "timestamp": "ISO date string",
+      "username": "string (optional)"
+    }
+  ]
+}
+```
+- Error (500): `{ "error": "error message" }`
+
+Messages are sorted by creation time in descending order (newest first).
+
+#### POST - Create Message
+
 **Method:** `POST`  
 **Request Body:**
 ```json
 {
-  "content": "string (required)"
+  "content": "string (required)",
+  "fingerprint": "string (required)",
+  "username": "string (required)"
 }
 ```
 
