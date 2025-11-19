@@ -59,4 +59,3 @@ export function generateRandomUsername(): string {
 
     return `${adjective}-${noun}-${number}`;
 }
-

@@ -53,7 +53,9 @@ export default function Home() {
         setIsSubmitting(true);
 
         if (!fingerprint) {
-            toast.error("Unable to generate fingerprint. Please refresh the page.");
+            toast.error(
+                "Unable to generate fingerprint. Please refresh the page.",
+            );
             setIsSubmitting(false);
             return;
         }

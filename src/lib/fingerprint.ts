@@ -18,7 +18,9 @@ export function generateFingerprint(): string {
 
     // Timezone
     try {
-        components.push(`tz:${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
+        components.push(
+            `tz:${Intl.DateTimeFormat().resolvedOptions().timeZone}`,
+        );
     } catch {
         // Ignore if timezone detection fails
     }
@@ -77,4 +79,3 @@ function hashString(str: string): string {
     }
     return Math.abs(hash).toString(36);
 }
-
