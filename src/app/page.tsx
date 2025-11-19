@@ -1,7 +1,7 @@
 "use client";
 
 import { Heart, Send, Shield } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/empty";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { generateFingerprint } from "@/lib/fingerprint";
 import { generateRandomUsername } from "@/lib/username";
@@ -37,10 +38,65 @@ export default function Home() {
     const [messageContent, setMessageContent] = useState("");
     const [fingerprint, setFingerprint] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Generate stable IDs for skeleton loaders
+    const skeletonIds = useMemo(
+        () =>
+            Array.from(
+                { length: 3 },
+                (_, i) => `skeleton-${i}-${Math.random()}`,
+            ),
+        [],
+    );
 
     // Generate fingerprint on component mount
     useEffect(() => {
         setFingerprint(generateFingerprint());
+    }, []);
+
+    // Fetch messages from API on component mount
+    useEffect(() => {
+        const fetchMessages = async () => {
+            setIsLoading(true);
+            try {
+                const res = await fetch("/api/notion", {
+                    method: "GET",
+                });
+
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.error || "Failed to fetch messages");
+                }
+
+                const data = await res.json();
+                if (data.messages && Array.isArray(data.messages)) {
+                    // Convert timestamp strings back to Date objects
+                    const messagesWithDates: Message[] = data.messages.map(
+                        (msg: {
+                            id: string;
+                            content: string;
+                            timestamp: string | Date;
+                            username?: string;
+                        }) => ({
+                            ...msg,
+                            timestamp:
+                                typeof msg.timestamp === "string"
+                                    ? new Date(msg.timestamp)
+                                    : msg.timestamp,
+                        }),
+                    );
+                    setMessages(messagesWithDates);
+                }
+            } catch (error) {
+                console.error("Error fetching messages:", error);
+                // Don't show error toast on initial load to avoid annoying users
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchMessages();
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -206,7 +262,27 @@ export default function Home() {
                         </p>
                     </div>
 
-                    {messages.length === 0 ? (
+                    {isLoading ? (
+                        <div className="space-y-4">
+                            {skeletonIds.map((id) => (
+                                <Card key={id} className="transition-shadow">
+                                    <CardContent className="pt-6">
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <Skeleton className="h-4 w-full" />
+                                                <Skeleton className="h-4 w-full" />
+                                                <Skeleton className="h-4 w-3/4" />
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <Skeleton className="h-5 w-16 rounded-full" />
+                                                <Skeleton className="h-4 w-20" />
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    ) : messages.length === 0 ? (
                         <Empty>
                             <EmptyMedia variant="icon">
                                 <Heart className="size-6" />
