@@ -21,6 +21,8 @@ As an applicant project, this implementation showcases:
 ## Optional Enhancements (Bonus)
 
 - [x] Timestamps for messages (implemented)
+- [x] Character limit (1000 characters) with live counter (implemented)
+- [x] Toast notifications for submission feedback (implemented)
 - [ ] Basic moderation (e.g., detect and block abusive or harmful language)
 - [ ] Emoji support for messages
 - [ ] Animated transitions, submission confirmations, or other UX polish
@@ -34,6 +36,7 @@ As an applicant project, this implementation showcases:
 - **UI Components**: Radix UI primitives
 - **Form Handling**: React Hook Form with Zod validation
 - **Icons**: Lucide React
+- **Toast Notifications**: Sonner
 - **Linting/Formatting**: Biome
 - **Database**: [Notion API](https://developers.notion.com/) for storing messages
 
@@ -54,7 +57,7 @@ npm install
 
 2. **Configure Notion API:**
 
-   - Create a `.env.local` file in the root directory (copy from `.env.example`)
+   - Create a `.env.local` file in the root directory
    - Set up a Notion integration:
      - Go to [https://www.notion.so/my-integrations](https://www.notion.so/my-integrations)
      - Click "New integration"
@@ -67,6 +70,7 @@ npm install
        - `content` with type "Rich Text"
        - `username` with type "Rich Text" (optional, but recommended)
        - `fingerprint` with type "Rich Text" (optional, but recommended)
+       - `created_date` with type "Date" (optional, but recommended for better sorting)
      - Share the database with your integration (click "..." → "Connections" → select your integration)
      - Copy the database ID from the URL (the part after the last `/` and before `?`) → set as `NOTION_DATABASE_ID` in `.env.local`
 
@@ -128,6 +132,7 @@ Your Notion database must have the following properties:
 - **`content`** property (Rich Text type) - stores the message content
 - **`username`** property (Rich Text type) - stores the generated username (optional)
 - **`fingerprint`** property (Rich Text type) - stores the browser fingerprint for tracking (optional)
+- **`created_date`** property (Date type) - stores the creation timestamp (optional, but recommended)
 
 If your schema differs, update the property names in `src/app/api/notion/route.ts`.
 
@@ -164,9 +169,10 @@ Messages are sorted by creation time in descending order (newest first).
 **Request Body:**
 ```json
 {
-  "content": "string (required)",
+  "content": "string (required, max 1000 characters)",
   "fingerprint": "string (required)",
-  "username": "string (required)"
+  "username": "string (required)",
+  "created_date": "string (optional, ISO date string)"
 }
 ```
 
