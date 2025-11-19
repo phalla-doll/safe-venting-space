@@ -347,10 +347,13 @@ export default function Home() {
 
                     {isLoading ? (
                         <div className="space-y-4">
-                            {skeletonIds.map((id) => (
+                            {skeletonIds.map((id, index) => (
                                 <Card
                                     key={id}
-                                    className="shadow-xs transition-shadow"
+                                    className="animate-fade-up shadow-xs transition-shadow"
+                                    style={{
+                                        animationDelay: `${index * 0.1}s`,
+                                    }}
                                 >
                                     <CardContent>
                                         <div className="space-y-4">
@@ -383,10 +386,13 @@ export default function Home() {
                         </Empty>
                     ) : (
                         <div className="space-y-4">
-                            {messages.map((message) => (
+                            {messages.map((message, index) => (
                                 <Card
                                     key={message.id}
-                                    className="shadow-xs transition-shadow hover:shadow-md"
+                                    className="animate-fade-up shadow-xs transition-shadow hover:shadow-md"
+                                    style={{
+                                        animationDelay: `${index * 0.1}s`,
+                                    }}
                                     onMouseEnter={() => {
                                         // Track message view on hover
                                         trackEvent(GA_EVENTS.MESSAGE_VIEW, {
