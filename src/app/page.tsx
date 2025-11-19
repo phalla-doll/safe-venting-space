@@ -5,13 +5,15 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import {
     Empty,
     EmptyDescription,
@@ -42,6 +44,7 @@ export default function Home() {
     const [fingerprint, setFingerprint] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     // Generate stable IDs for skeleton loaders
     const skeletonIds = useMemo(
@@ -191,6 +194,7 @@ export default function Home() {
 
             setMessages((prev) => [newMessage, ...prev]);
             setMessageContent("");
+            setIsDialogOpen(false);
 
             // Track successful submission
             trackEvent(GA_EVENTS.FORM_SUBMIT_SUCCESS, {
@@ -240,11 +244,11 @@ export default function Home() {
 
     return (
         <div className="min-h-screen bg-background">
-            <div className="container mx-auto max-w-4xl px-4 py-8 md:px-6 md:py-12">
+            <div className="container mx-auto max-w-4xl px-4 py-8 md:px-6 md:py-24">
                 {/* Header Section */}
                 <div className="mb-8 text-center">
                     <div className="mb-4 flex items-center justify-center gap-2">
-                        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
+                        <h1 className="text-2xl font-semibold tracking-tight md:text-4xl">
                             Safe Venting Space
                         </h1>
                     </div>
@@ -258,18 +262,24 @@ export default function Home() {
                             100% Anonymous • No Login Required
                         </span>
                     </div>
+                    <div className="mt-6">
+                        <Button onClick={() => setIsDialogOpen(true)} size="lg">
+                            <MessageCircleReply className="size-4" />
+                            Post Your Thoughts
+                        </Button>
+                    </div>
                 </div>
 
-                {/* Submission Form */}
-                <Card className="mb-8 shadow-xs">
-                    <CardHeader>
-                        <CardTitle>Share Your Thoughts</CardTitle>
-                        <CardDescription>
-                            Express yourself freely. Your message will be shared
-                            anonymously in the feed below.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                {/* Post Dialog */}
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogContent className="sm:max-w-[600px]">
+                        <DialogHeader>
+                            <DialogTitle>Share Your Thoughts</DialogTitle>
+                            <DialogDescription>
+                                Express yourself freely. Your message will be
+                                shared anonymously in the feed below.
+                            </DialogDescription>
+                        </DialogHeader>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="message">Your Message</Label>
@@ -313,24 +323,36 @@ export default function Home() {
                                     </span>
                                 </div>
                             </div>
-                            <Button
-                                type="submit"
-                                disabled={
-                                    isSubmitting || !messageContent.trim()
-                                }
-                            >
-                                {isSubmitting ? (
-                                    <Spinner className="size-4" />
-                                ) : (
-                                    <MessageCircleReply className="size-4" />
-                                )}
-                                {isSubmitting
-                                    ? "Sharing message..."
-                                    : "Share anonymously"}
-                            </Button>
+                            <DialogFooter>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                        setIsDialogOpen(false);
+                                        setMessageContent("");
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    disabled={
+                                        isSubmitting || !messageContent.trim()
+                                    }
+                                >
+                                    {isSubmitting ? (
+                                        <Spinner className="size-4" />
+                                    ) : (
+                                        <MessageCircleReply className="size-4" />
+                                    )}
+                                    {isSubmitting
+                                        ? "Sharing message..."
+                                        : "Share anonymously"}
+                                </Button>
+                            </DialogFooter>
                         </form>
-                    </CardContent>
-                </Card>
+                    </DialogContent>
+                </Dialog>
 
                 <Separator className="mb-8" />
 
