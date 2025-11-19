@@ -248,7 +248,7 @@ export default function Home() {
                 {/* Header Section */}
                 <div className="mb-8 text-center">
                     <div className="mb-4 flex items-center justify-center gap-2">
-                        <h1 className="text-2xl font-semibold tracking-tight md:text-4xl">
+                        <h1 className="text-2xl font-semibold tracking-tight">
                             Safe Venting Space
                         </h1>
                     </div>
