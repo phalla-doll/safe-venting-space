@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, Send, Shield } from "lucide-react";
+import { CornerDownLeft, Heart, MessageCircleReply, Send, Shield } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -245,11 +245,11 @@ export default function Home() {
                                 {isSubmitting ? (
                                     <Spinner className="size-4" />
                                 ) : (
-                                    <Send className="size-4" />
+                                    <MessageCircleReply className="size-4" />
                                 )}
                                 {isSubmitting
-                                    ? "Sharing..."
-                                    : "Share Anonymously"}
+                                    ? "Sharing message..."
+                                    : "Share anonymously"}
                             </Button>
                         </form>
                     </CardContent>
@@ -271,8 +271,8 @@ export default function Home() {
                     {isLoading ? (
                         <div className="space-y-4">
                             {skeletonIds.map((id) => (
-                                <Card key={id} className="transition-shadow">
-                                    <CardContent className="pt-6">
+                                <Card key={id} className="shadow-xs transition-shadow">
+                                    <CardContent>
                                         <div className="space-y-4">
                                             <div className="space-y-2">
                                                 <Skeleton className="h-4 w-full" />
@@ -308,7 +308,7 @@ export default function Home() {
                                     key={message.id}
                                     className="shadow-xs transition-shadow hover:shadow-md"
                                 >
-                                    <CardContent className="pt-6">
+                                    <CardContent>
                                         <div className="space-y-4">
                                             <p className="whitespace-pre-wrap text-base leading-relaxed">
                                                 {message.content}
