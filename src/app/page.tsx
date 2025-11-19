@@ -24,10 +24,10 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { GA_EVENTS, trackEvent, trackPageView } from "@/lib/analytics";
 import { generateFingerprint } from "@/lib/fingerprint";
 import { containsProfanity } from "@/lib/profanity";
 import { generateRandomUsername } from "@/lib/username";
-import { trackEvent, trackPageView, GA_EVENTS } from "@/lib/analytics";
 
 interface Message {
     id: string;
@@ -95,12 +95,12 @@ export default function Home() {
                         }),
                     );
                     setMessages(messagesWithDates);
-                    
+
                     // Track successful message fetch
                     trackEvent(GA_EVENTS.MESSAGE_FETCH_SUCCESS, {
                         message_count: messagesWithDates.length,
                     });
-                    
+
                     // Track empty state if no messages
                     if (messagesWithDates.length === 0) {
                         trackEvent(GA_EVENTS.MESSAGE_EMPTY_STATE);
@@ -110,7 +110,10 @@ export default function Home() {
                 console.error("Error fetching messages:", error);
                 // Track fetch error
                 trackEvent(GA_EVENTS.MESSAGE_FETCH_ERROR, {
-                    error_message: error instanceof Error ? error.message : "Unknown error",
+                    error_message:
+                        error instanceof Error
+                            ? error.message
+                            : "Unknown error",
                 });
                 // Don't show error toast on initial load to avoid annoying users
             } finally {
@@ -188,23 +191,24 @@ export default function Home() {
 
             setMessages((prev) => [newMessage, ...prev]);
             setMessageContent("");
-            
+
             // Track successful submission
             trackEvent(GA_EVENTS.FORM_SUBMIT_SUCCESS, {
                 message_length: newMessage.content.length,
                 message_id: newMessage.id,
             });
-            
+
             toast.success("Your message has been shared anonymously");
         } catch (error) {
             console.error("Error submitting message:", error);
-            
+
             // Track submission error
             trackEvent(GA_EVENTS.FORM_SUBMIT_ERROR, {
                 error_type: "api_error",
-                error_message: error instanceof Error ? error.message : "Unknown error",
+                error_message:
+                    error instanceof Error ? error.message : "Unknown error",
             });
-            
+
             toast.error(
                 error instanceof Error
                     ? error.message
@@ -276,13 +280,23 @@ export default function Home() {
                                     onChange={(e) => {
                                         const newValue = e.target.value;
                                         setMessageContent(newValue);
-                                        
+
                                         // Track character count milestones
                                         const length = newValue.length;
-                                        if (length > 0 && (length === 100 || length === 250 || length === 500 || length === 750 || length === 1000)) {
-                                            trackEvent(GA_EVENTS.CHARACTER_COUNT, {
-                                                character_count: length,
-                                            });
+                                        if (
+                                            length > 0 &&
+                                            (length === 100 ||
+                                                length === 250 ||
+                                                length === 500 ||
+                                                length === 750 ||
+                                                length === 1000)
+                                        ) {
+                                            trackEvent(
+                                                GA_EVENTS.CHARACTER_COUNT,
+                                                {
+                                                    character_count: length,
+                                                },
+                                            );
                                         }
                                     }}
                                     rows={5}
@@ -377,7 +391,8 @@ export default function Home() {
                                         // Track message view on hover
                                         trackEvent(GA_EVENTS.MESSAGE_VIEW, {
                                             message_id: message.id,
-                                            message_length: message.content.length,
+                                            message_length:
+                                                message.content.length,
                                         });
                                     }}
                                 >

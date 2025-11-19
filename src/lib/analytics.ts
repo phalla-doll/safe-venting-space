@@ -41,22 +41,22 @@ export function trackPageView(path: string, title?: string) {
 export const GA_EVENTS = {
     // Page interactions
     PAGE_VIEW: "page_view",
-    
+
     // Form interactions
     FORM_SUBMIT: "form_submit",
     FORM_SUBMIT_SUCCESS: "form_submit_success",
     FORM_SUBMIT_ERROR: "form_submit_error",
     FORM_PROFANITY_BLOCKED: "form_profanity_blocked",
-    
+
     // Message interactions
     MESSAGE_VIEW: "message_view",
     MESSAGE_FETCH_SUCCESS: "message_fetch_success",
     MESSAGE_FETCH_ERROR: "message_fetch_error",
     MESSAGE_EMPTY_STATE: "message_empty_state",
-    
+
     // Link clicks
     LINK_CLICK: "link_click",
-    
+
     // Engagement
     CHARACTER_COUNT: "character_count",
 } as const;
