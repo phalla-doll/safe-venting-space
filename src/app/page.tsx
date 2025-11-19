@@ -1,6 +1,12 @@
 "use client";
 
-import { CornerDownLeft, Heart, MessageCircleReply, Send, Shield } from "lucide-react";
+import {
+    CornerDownLeft,
+    Heart,
+    MessageCircleReply,
+    Send,
+    Shield,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -271,7 +277,10 @@ export default function Home() {
                     {isLoading ? (
                         <div className="space-y-4">
                             {skeletonIds.map((id) => (
-                                <Card key={id} className="shadow-xs transition-shadow">
+                                <Card
+                                    key={id}
+                                    className="shadow-xs transition-shadow"
+                                >
                                     <CardContent>
                                         <div className="space-y-4">
                                             <div className="space-y-2">
