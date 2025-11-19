@@ -1,6 +1,12 @@
 "use client";
 
-import { Heart, MessageCircleReply, Shield } from "lucide-react";
+import {
+    CornerDownLeft,
+    Heart,
+    MessageCircle,
+    Search,
+    Shield,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +27,11 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from "@/components/ui/empty";
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupInput,
+} from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -45,6 +56,7 @@ export default function Home() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
 
     // Generate stable IDs for skeleton loaders
     const skeletonIds = useMemo(
@@ -55,6 +67,14 @@ export default function Home() {
             ),
         [],
     );
+
+    // Filter messages based on search query
+    const filteredMessages = useMemo(() => {
+        if (!searchQuery.trim()) return messages;
+        return messages.filter((message) =>
+            message.content.toLowerCase().includes(searchQuery.toLowerCase()),
+        );
+    }, [messages, searchQuery]);
 
     // Generate fingerprint on component mount
     useEffect(() => {
@@ -194,6 +214,7 @@ export default function Home() {
 
             setMessages((prev) => [newMessage, ...prev]);
             setMessageContent("");
+            setSearchQuery(""); // Clear search filter so the newly posted message is visible
             setIsDialogOpen(false);
 
             // Track successful submission
@@ -264,8 +285,8 @@ export default function Home() {
                     </div>
                     <div className="mt-6">
                         <Button onClick={() => setIsDialogOpen(true)} size="lg">
-                            <MessageCircleReply className="size-4" />
-                            Post Your Thoughts
+                            <MessageCircle className="size-4" />
+                            Post your thoughts
                         </Button>
                     </div>
                 </div>
@@ -343,7 +364,7 @@ export default function Home() {
                                     {isSubmitting ? (
                                         <Spinner className="size-4" />
                                     ) : (
-                                        <MessageCircleReply className="size-4" />
+                                        <CornerDownLeft className="size-4" />
                                     )}
                                     {isSubmitting
                                         ? "Sharing message..."
@@ -358,13 +379,30 @@ export default function Home() {
 
                 {/* Messages Feed */}
                 <div className="space-y-4">
-                    <div className="mb-6">
-                        <h2 className="text-2xl font-semibold tracking-tight">
-                            Community Feed
-                        </h2>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Messages shared by others in this safe space
-                        </p>
+                    <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                        <div>
+                            <h2 className="text-2xl font-semibold tracking-tight">
+                                Community Feed
+                            </h2>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                Messages shared by others in this safe space
+                            </p>
+                        </div>
+                        <div className="w-full md:w-auto md:min-w-[300px]">
+                            <InputGroup>
+                                <InputGroupAddon align="inline-start">
+                                    <Search className="size-4" />
+                                </InputGroupAddon>
+                                <InputGroupInput
+                                    type="text"
+                                    placeholder="Search messages..."
+                                    value={searchQuery}
+                                    onChange={(e) =>
+                                        setSearchQuery(e.target.value)
+                                    }
+                                />
+                            </InputGroup>
+                        </div>
                     </div>
 
                     {isLoading ? (
@@ -406,9 +444,23 @@ export default function Home() {
                                 </EmptyDescription>
                             </EmptyHeader>
                         </Empty>
+                    ) : filteredMessages.length === 0 ? (
+                        <Empty>
+                            <EmptyMedia variant="icon">
+                                <Search className="size-6" />
+                            </EmptyMedia>
+                            <EmptyHeader>
+                                <EmptyTitle>No messages found</EmptyTitle>
+                                <EmptyDescription>
+                                    No messages match your search query. Try
+                                    different keywords or clear your search to
+                                    see all messages.
+                                </EmptyDescription>
+                            </EmptyHeader>
+                        </Empty>
                     ) : (
                         <div className="space-y-4">
-                            {messages.map((message, index) => (
+                            {filteredMessages.map((message, index) => (
                                 <Card
                                     key={message.id}
                                     className="animate-fade-up shadow-xs"
