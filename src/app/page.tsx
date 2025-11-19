@@ -203,7 +203,7 @@ export default function Home() {
                 </div>
 
                 {/* Submission Form */}
-                <Card className="mb-8">
+                <Card className="mb-8 shadow-xs">
                     <CardHeader>
                         <CardTitle>Share Your Thoughts</CardTitle>
                         <CardDescription>
@@ -306,7 +306,7 @@ export default function Home() {
                             {messages.map((message) => (
                                 <Card
                                     key={message.id}
-                                    className="transition-shadow hover:shadow-md"
+                                    className="shadow-xs transition-shadow hover:shadow-md"
                                 >
                                     <CardContent className="pt-6">
                                         <div className="space-y-4">
