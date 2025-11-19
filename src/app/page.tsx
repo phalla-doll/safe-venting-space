@@ -1,7 +1,7 @@
 "use client";
 
 import { Heart, Send, Shield } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,17 +22,26 @@ import {
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { generateFingerprint } from "@/lib/fingerprint";
+import { generateRandomUsername } from "@/lib/username";
 
 interface Message {
     id: string;
     content: string;
     timestamp: Date;
+    username?: string;
 }
 
 export default function Home() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [messageContent, setMessageContent] = useState("");
+    const [fingerprint, setFingerprint] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Generate fingerprint on component mount
+    useEffect(() => {
+        setFingerprint(generateFingerprint());
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -43,12 +52,23 @@ export default function Home() {
 
         setIsSubmitting(true);
 
+        if (!fingerprint) {
+            toast.error("Unable to generate fingerprint. Please refresh the page.");
+            setIsSubmitting(false);
+            return;
+        }
+
+        // Generate a random username for this submission
+        const randomUsername = generateRandomUsername();
+
         try {
             const res = await fetch("/api/notion", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     content: messageContent.trim(),
+                    fingerprint,
+                    username: randomUsername,
                 }),
             });
 
@@ -63,6 +83,7 @@ export default function Home() {
                 id: data.id || Date.now().toString(),
                 content: messageContent.trim(),
                 timestamp: new Date(),
+                username: randomUsername,
             };
 
             setMessages((prev) => [newMessage, ...prev]);
@@ -218,7 +239,7 @@ export default function Home() {
                                                     )}
                                                 </Badge>
                                                 <span className="text-xs text-muted-foreground">
-                                                    Anonymous
+                                                    {message.username}
                                                 </span>
                                             </div>
                                         </div>

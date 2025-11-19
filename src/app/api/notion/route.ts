@@ -22,6 +22,8 @@ const notion = new Client({ auth: notionApiKey });
 
 type CreateSubmissionBody = {
     content?: string;
+    fingerprint?: string;
+    username?: string; // Required but optional in type for validation
 };
 
 export async function POST(request: Request) {
@@ -41,6 +43,8 @@ export async function POST(request: Request) {
     }
 
     const content = (body.content || "").trim();
+    const fingerprint = body.fingerprint || "";
+    const username = (body.username || "").trim();
 
     if (!content) {
         return NextResponse.json(
@@ -49,19 +53,49 @@ export async function POST(request: Request) {
         );
     }
 
+    if (!fingerprint) {
+        return NextResponse.json(
+            { error: "'fingerprint' is required" },
+            { status: 400 },
+        );
+    }
+
+    if (!username) {
+        return NextResponse.json(
+            { error: "'username' is required" },
+            { status: 400 },
+        );
+    }
+
     try {
+        // Adjust property names and types to match your Notion database schema
+        const properties = {
+            content: {
+                rich_text: [
+                    {
+                        text: { content },
+                    },
+                ],
+            },
+            fingerprint: {
+                rich_text: [
+                    {
+                        text: { content: fingerprint },
+                    },
+                ],
+            },
+            username: {
+                rich_text: [
+                    {
+                        text: { content: username },
+                    },
+                ],
+            },
+        };
+
         const created = await notion.pages.create({
             parent: { database_id: notionDatabaseId },
-            properties: {
-                // Adjust property names and types to match your Notion database schema
-                content: {
-                    rich_text: [
-                        {
-                            text: { content },
-                        },
-                    ],
-                },
-            },
+            properties,
         });
 
         return NextResponse.json(
