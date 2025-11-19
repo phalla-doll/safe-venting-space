@@ -25,6 +25,7 @@ type CreateSubmissionBody = {
     content?: string;
     fingerprint?: string;
     username?: string; // Required but optional in type for validation
+    created_date?: string; // ISO date string
 };
 
 export async function GET() {
@@ -176,6 +177,9 @@ export async function POST(request: Request) {
     }
 
     try {
+        // Use provided created_date or default to current time
+        const createdDate = body.created_date || new Date().toISOString();
+
         // Adjust property names and types to match your Notion database schema
         const properties = {
             content: {
@@ -198,6 +202,11 @@ export async function POST(request: Request) {
                         text: { content: username },
                     },
                 ],
+            },
+            created_date: {
+                date: {
+                    start: createdDate,
+                },
             },
         };
 

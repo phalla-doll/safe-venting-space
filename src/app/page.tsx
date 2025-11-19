@@ -127,6 +127,7 @@ export default function Home() {
                     content: messageContent.trim(),
                     fingerprint,
                     username: randomUsername,
+                    created_date: new Date().toISOString(),
                 }),
             });
 
