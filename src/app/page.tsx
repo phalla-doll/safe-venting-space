@@ -25,6 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { generateFingerprint } from "@/lib/fingerprint";
+import { containsProfanity } from "@/lib/profanity";
 import { generateRandomUsername } from "@/lib/username";
 
 interface Message {
@@ -104,6 +105,14 @@ export default function Home() {
         e.preventDefault();
 
         if (!messageContent.trim()) {
+            return;
+        }
+
+        // Check for profanity before submitting
+        if (containsProfanity(messageContent.trim())) {
+            toast.error(
+                "Your message contains inappropriate language. Please revise your message to maintain a safe and respectful environment.",
+            );
             return;
         }
 

@@ -23,7 +23,7 @@ As an applicant project, this implementation showcases:
 - [x] Timestamps for messages (implemented)
 - [x] Character limit (1000 characters) with live counter (implemented)
 - [x] Toast notifications for submission feedback (implemented)
-- [ ] Basic moderation (e.g., detect and block abusive or harmful language)
+- [x] Basic moderation (e.g., detect and block abusive or harmful language) (implemented)
 - [ ] Emoji support for messages
 - [ ] Animated transitions, submission confirmations, or other UX polish
 - [x] Soothing UI theme, accessible design, and responsive layout (implemented)
