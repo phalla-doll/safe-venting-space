@@ -1,12 +1,6 @@
 "use client";
 
-import {
-    CornerDownLeft,
-    Heart,
-    MessageCircleReply,
-    Send,
-    Shield,
-} from "lucide-react";
+import { Heart, MessageCircleReply, Shield } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
