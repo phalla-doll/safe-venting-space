@@ -27,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { generateFingerprint } from "@/lib/fingerprint";
 import { containsProfanity } from "@/lib/profanity";
 import { generateRandomUsername } from "@/lib/username";
+import { trackEvent, trackPageView, GA_EVENTS } from "@/lib/analytics";
 
 interface Message {
     id: string;
@@ -55,6 +56,11 @@ export default function Home() {
     // Generate fingerprint on component mount
     useEffect(() => {
         setFingerprint(generateFingerprint());
+    }, []);
+
+    // Track page view on mount
+    useEffect(() => {
+        trackPageView("/", "Safe Venting Space");
     }, []);
 
     // Fetch messages from API on component mount
@@ -89,9 +95,23 @@ export default function Home() {
                         }),
                     );
                     setMessages(messagesWithDates);
+                    
+                    // Track successful message fetch
+                    trackEvent(GA_EVENTS.MESSAGE_FETCH_SUCCESS, {
+                        message_count: messagesWithDates.length,
+                    });
+                    
+                    // Track empty state if no messages
+                    if (messagesWithDates.length === 0) {
+                        trackEvent(GA_EVENTS.MESSAGE_EMPTY_STATE);
+                    }
                 }
             } catch (error) {
                 console.error("Error fetching messages:", error);
+                // Track fetch error
+                trackEvent(GA_EVENTS.MESSAGE_FETCH_ERROR, {
+                    error_message: error instanceof Error ? error.message : "Unknown error",
+                });
                 // Don't show error toast on initial load to avoid annoying users
             } finally {
                 setIsLoading(false);
@@ -110,15 +130,26 @@ export default function Home() {
 
         // Check for profanity before submitting
         if (containsProfanity(messageContent.trim())) {
+            trackEvent(GA_EVENTS.FORM_PROFANITY_BLOCKED, {
+                message_length: messageContent.trim().length,
+            });
             toast.error(
                 "Your message contains inappropriate language. Please revise your message to maintain a safe and respectful environment.",
             );
             return;
         }
 
+        // Track form submission attempt
+        trackEvent(GA_EVENTS.FORM_SUBMIT, {
+            message_length: messageContent.trim().length,
+        });
+
         setIsSubmitting(true);
 
         if (!fingerprint) {
+            trackEvent(GA_EVENTS.FORM_SUBMIT_ERROR, {
+                error_type: "fingerprint_generation_failed",
+            });
             toast.error(
                 "Unable to generate fingerprint. Please refresh the page.",
             );
@@ -157,9 +188,23 @@ export default function Home() {
 
             setMessages((prev) => [newMessage, ...prev]);
             setMessageContent("");
+            
+            // Track successful submission
+            trackEvent(GA_EVENTS.FORM_SUBMIT_SUCCESS, {
+                message_length: newMessage.content.length,
+                message_id: newMessage.id,
+            });
+            
             toast.success("Your message has been shared anonymously");
         } catch (error) {
             console.error("Error submitting message:", error);
+            
+            // Track submission error
+            trackEvent(GA_EVENTS.FORM_SUBMIT_ERROR, {
+                error_type: "api_error",
+                error_message: error instanceof Error ? error.message : "Unknown error",
+            });
+            
             toast.error(
                 error instanceof Error
                     ? error.message
@@ -228,9 +273,18 @@ export default function Home() {
                                     id="message"
                                     placeholder="What's on your mind? Share anything you'd like..."
                                     value={messageContent}
-                                    onChange={(e) =>
-                                        setMessageContent(e.target.value)
-                                    }
+                                    onChange={(e) => {
+                                        const newValue = e.target.value;
+                                        setMessageContent(newValue);
+                                        
+                                        // Track character count milestones
+                                        const length = newValue.length;
+                                        if (length > 0 && (length === 100 || length === 250 || length === 500 || length === 750 || length === 1000)) {
+                                            trackEvent(GA_EVENTS.CHARACTER_COUNT, {
+                                                character_count: length,
+                                            });
+                                        }
+                                    }}
                                     rows={5}
                                     className="resize-none"
                                     required
@@ -319,6 +373,13 @@ export default function Home() {
                                 <Card
                                     key={message.id}
                                     className="shadow-xs transition-shadow hover:shadow-md"
+                                    onMouseEnter={() => {
+                                        // Track message view on hover
+                                        trackEvent(GA_EVENTS.MESSAGE_VIEW, {
+                                            message_id: message.id,
+                                            message_length: message.content.length,
+                                        });
+                                    }}
                                 >
                                     <CardContent>
                                         <div className="space-y-4">
