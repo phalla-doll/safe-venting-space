@@ -34,16 +34,45 @@ As an applicant project, this implementation showcases:
 - **Form Handling**: React Hook Form with Zod validation
 - **Icons**: Lucide React
 - **Linting/Formatting**: Biome
+- **Database**: [Notion API](https://developers.notion.com/) for storing messages
 
 ## Getting Started
 
-First, install dependencies:
+### Prerequisites
+
+- Node.js 18+ installed
+- A Notion account and workspace
+
+### Setup
+
+1. **Install dependencies:**
 
 ```bash
 npm install
 ```
 
-Then, run the development server:
+2. **Configure Notion API:**
+
+   - Create a `.env.local` file in the root directory (copy from `.env.example`)
+   - Set up a Notion integration:
+     - Go to [https://www.notion.so/my-integrations](https://www.notion.so/my-integrations)
+     - Click "New integration"
+     - Choose "Internal" integration type
+     - Give it a name (e.g., "Safe Venting Space")
+     - Copy the "Internal Integration Token" → set as `NOTION_API_KEY` in `.env.local`
+   - Create a Notion database:
+     - Create a new database in your Notion workspace
+     - Add a property named `content` with type "Rich Text"
+     - Share the database with your integration (click "..." → "Connections" → select your integration)
+     - Copy the database ID from the URL (the part after the last `/` and before `?`) → set as `NOTION_DATABASE_ID` in `.env.local`
+
+   Example `.env.local`:
+   ```
+   NOTION_API_KEY=secret_xxxxxxxxxxxxx
+   NOTION_DATABASE_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+   ```
+
+3. **Run the development server:**
 
 ```bash
 npm run dev
@@ -79,11 +108,43 @@ src/
 └── lib/             # Utility functions and helpers
 ```
 
+## Notion API Integration
+
+This project uses the Notion API to persist anonymous messages. When a user submits a message:
+
+1. The message is sent to `/api/notion` endpoint
+2. The API creates a new page in your Notion database
+3. The message content is stored in the `content` property
+4. Success/error feedback is shown to the user via toast notifications
+
+### Database Schema Requirements
+
+Your Notion database must have:
+- **`content`** property (Rich Text type)
+
+If your schema differs, update the property name in `src/app/api/notion/route.ts`.
+
+### API Endpoint
+
+**Location:** `/api/notion`  
+**Method:** `POST`  
+**Request Body:**
+```json
+{
+  "content": "string (required)"
+}
+```
+
+**Response:**
+- Success (201): `{ "id": "...", "url": "..." }`
+- Error (400/500): `{ "error": "error message" }`
+
 ## Learn More
 
 To learn more about the technologies used in this project:
 
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API
+- [Notion API Documentation](https://developers.notion.com/) - learn about Notion API integration
 - [Radix UI](https://www.radix-ui.com/) - accessible component primitives
 - [Tailwind CSS](https://tailwindcss.com/) - utility-first CSS framework
 - [React Hook Form](https://react-hook-form.com/) - performant form library

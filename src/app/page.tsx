@@ -2,6 +2,7 @@
 
 import { Heart, Send, Shield } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,18 +43,41 @@ export default function Home() {
 
         setIsSubmitting(true);
 
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        try {
+            const res = await fetch("/api/notion", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    content: messageContent.trim(),
+                }),
+            });
 
-        const newMessage: Message = {
-            id: Date.now().toString(),
-            content: messageContent.trim(),
-            timestamp: new Date(),
-        };
+            const data = await res.json();
 
-        setMessages((prev) => [newMessage, ...prev]);
-        setMessageContent("");
-        setIsSubmitting(false);
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to save message");
+            }
+
+            // Success - add message to local state
+            const newMessage: Message = {
+                id: data.id || Date.now().toString(),
+                content: messageContent.trim(),
+                timestamp: new Date(),
+            };
+
+            setMessages((prev) => [newMessage, ...prev]);
+            setMessageContent("");
+            toast.success("Your message has been shared anonymously");
+        } catch (error) {
+            console.error("Error submitting message:", error);
+            toast.error(
+                error instanceof Error
+                    ? error.message
+                    : "Failed to share your message. Please try again.",
+            );
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const formatTimestamp = (date: Date) => {
